@@ -1,0 +1,13 @@
+57c57
+< WX_LIBS="$(wx-config --libs)"
+---
+> WX_LIBS="$(wx-config --libs std,aui)"
+132a133,136
+> 
+> PKG_CHECK_MODULES([LIBSQLITE3], [sqlite3], , AC_MSG_ERROR(['libsqlite3' is required but it doesn't seem to be installed on this system.]))
+> AC_SUBST(LIBSQLITE3_CFLAGS)
+> AC_SUBST(LIBSQLITE3_LIBS)
+138c142
+< AC_CHECK_LIB(gaiagraphics,gGraphCreateSVG,,AC_MSG_ERROR([found an obsolete 'libgaiagraphics': please update to a more recent version.]),-lm)
+---
+> AC_CHECK_LIB(gaiagraphics,gGraphCreateSVG,,AC_MSG_ERROR([found an obsolete 'libgaiagraphics': please update to a more recent version.]),$LIBGAIAGRAPHICS_LIBS)

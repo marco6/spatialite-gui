@@ -10,7 +10,6 @@ grade: devel
 confinement: devmode # use 'strict' once you have the right plugs and slots
 compression: lzo
 
-
 apps:
   spatialite-gui:
     command: usr/local/bin/spatialite_gui
@@ -75,6 +74,7 @@ parts:
     build-environment:
       - PKG_CONFIG_PATH: $SNAPCRAFT_STAGE/usr/local/lib/pkgconfig/
       - CFLAGS: "-DACCEPT_USE_OF_DEPRECATED_PROJ_API_H"
+
   cleanup:
     after:  # Make this part run last; list all your other parts here
       - libgaiagraphics
@@ -83,12 +83,29 @@ parts:
     build-snaps:  # List all content-snaps and base snaps you're using here
       - core20
       - gnome-3-38-2004-sdk
+      - gtk-common-themes
     override-prime: |
       set -eux
-      find . -type d -empty -prune -exec rm -rf \{} \;
-      rm -rf usr/share/doc usr/share/man
-      for snap in "core20" "gnome-3-38-2004"; do
+
+      snaps="core20 gnome-3-38-2004"
+
+      for snap in $snaps; do
+        find "/snap/$snap/current/" -type l -name \*.so\* -printf "$SNAPCRAFT_PRIME/%P\0" \
+          | xargs -0 -ri sh -c "readlink -ez {} || true" \
+          | xargs -0 -r rm -rfv
+      done
+
+      for snap in $snaps; do
           cd "/snap/$snap/current" && \
-            find . -type f,l -exec rm -f "$SNAPCRAFT_PRIME/{}" \;
-          find . -type d -empty -prune -exec rm -rf \{} \;
+            find . -type f,l -exec rm -rfv "$SNAPCRAFT_PRIME/{}" \;
+      done
+
+      cd /snap/gtk-common-themes/current && \
+        find . -type f,l -exec rm -rfv "$SNAPCRAFT_PRIME/usr/{}" \;
+
+      rm -rf $SNAPCRAFT_PRIME/usr/share/doc $SNAPCRAFT_PRIME/usr/share/man
+
+      while find $SNAPCRAFT_PRIME -type d -empty -prune -exec rm -rfv \{} \; | grep .
+      do
+        echo "Removed some folders"
       done

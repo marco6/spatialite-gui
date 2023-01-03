@@ -105,7 +105,4 @@ parts:
 
       rm -rf $SNAPCRAFT_PRIME/usr/share/doc $SNAPCRAFT_PRIME/usr/share/man
 
-      while find $SNAPCRAFT_PRIME -type d -empty -prune -exec rm -rfv \{} \; | grep .
-      do
-        echo "Removed some folders"
-      done
+      find $SNAPCRAFT_PRIME -depth -type d -empty -delete

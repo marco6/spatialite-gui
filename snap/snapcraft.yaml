@@ -40,7 +40,9 @@ parts:
       - -**/*.a
       - -**/*.la
       - -**/*.pc
-      - -usr/local/include/*
+      - -usr/local/include
+      - -usr/share/doc 
+      - -usr/share/man
 
   spatialite-gui:
     plugin: autotools
@@ -61,6 +63,23 @@ parts:
       - libgeotiff5
       - libwxbase3.0-0v5
       - libwxgtk3.0-gtk3-0v5
+    prime:
+      - -**/*.a
+      - -**/*.la
+      - -**/*.pc
+      - -usr/share/doc 
+      - -usr/share/man
+      - -usr/lib/x86_64-linux-gnu/libpsl.so.5.3.2
+      - -usr/lib/x86_64-linux-gnu/librest-0.7.so.0.0.0
+      - -usr/lib/x86_64-linux-gnu/libwx_baseu_net-3.0.so.0.4.0 
+      - -usr/lib/x86_64-linux-gnu/libwx_baseu_xml-3.0.so.0.4.0 
+      - -usr/lib/x86_64-linux-gnu/libwx_gtk3u_gl-3.0.so.0.4.0 
+      - -usr/lib/x86_64-linux-gnu/libwx_gtk3u_propgrid-3.0.so.0.4.0 
+      - -usr/lib/x86_64-linux-gnu/libwx_gtk3u_qa-3.0.so.0.4.0 
+      - -usr/lib/x86_64-linux-gnu/libwx_gtk3u_ribbon-3.0.so.0.4.0 
+      - -usr/lib/x86_64-linux-gnu/libwx_gtk3u_richtext-3.0.so.0.4.0 
+      - -usr/lib/x86_64-linux-gnu/libwx_gtk3u_stc-3.0.so.0.4.0 
+      - -usr/lib/x86_64-linux-gnu/libwx_gtk3u_xrc-3.0.so.0.4.0
 
     override-pull: |
       snapcraftctl pull
@@ -84,25 +103,23 @@ parts:
       - core20
       - gnome-3-38-2004-sdk
       - gtk-common-themes
+
     override-prime: |
       set -eux
 
       snaps="core20 gnome-3-38-2004"
 
       for snap in $snaps; do
+
         find "/snap/$snap/current/" -type l -name \*.so\* -printf "$SNAPCRAFT_PRIME/%P\0" \
           | xargs -0 -ri sh -c "readlink -ez {} || true" \
-          | xargs -0 -r rm -rfv
+          | xargs -0 -r rm -rf
+
+        find "/snap/$snap/current/" -type f,l -printf "$SNAPCRAFT_PRIME/%P\0" \
+          | xargs -0 -r rm -rf
       done
 
-      for snap in $snaps; do
-          cd "/snap/$snap/current" && \
-            find . -type f,l -exec rm -rfv "$SNAPCRAFT_PRIME/{}" \;
-      done
-
-      cd /snap/gtk-common-themes/current && \
-        find . -type f,l -exec rm -rfv "$SNAPCRAFT_PRIME/usr/{}" \;
-
-      rm -rf $SNAPCRAFT_PRIME/usr/share/doc $SNAPCRAFT_PRIME/usr/share/man
+      find /snap/gtk-common-themes/current/ -type f,l -printf "$SNAPCRAFT_PRIME/usr/%P\0" \
+        | xargs -0 -r rm -rf
 
       find $SNAPCRAFT_PRIME -depth -type d -empty -delete
